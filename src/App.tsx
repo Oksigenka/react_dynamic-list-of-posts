@@ -21,7 +21,8 @@ export const App = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [errorMessage, setErrorMessage] = useState(false);
+  const [isUsersError, setIsUsersError] = useState(false);
+  const [isPostsError, setIsPostsError] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
@@ -29,20 +30,20 @@ export const App = () => {
   const [isCommentsError, setIsCommentsError] = useState(false);
 
   function loadUsers() {
-    setErrorMessage(false);
+    setIsUsersError(false);
 
     getUsers()
       .then(setUsers)
-      .catch(() => setErrorMessage(true));
+      .catch(() => setIsUsersError(true));
   }
 
   const loadPostsByUser = (userId: number) => {
-    setErrorMessage(false);
+    setIsPostsError(false);
     setIsLoadingPosts(true);
 
     getPosts(userId)
       .then(setPosts)
-      .catch(() => setErrorMessage(true))
+      .catch(() => setIsPostsError(true))
       .finally(() => {
         setIsLoadingPosts(false);
       });
@@ -99,13 +100,15 @@ export const App = () => {
             )}
           >
             <div className="tile is-child box is-success">
-              <div className="block">
-                <UserSelector
-                  users={users}
-                  selectedUserId={selectedUserId}
-                  onSelect={setSelectedUserId}
-                />
-              </div>
+              {!isUsersError && (
+                <div className="block">
+                  <UserSelector
+                    users={users}
+                    selectedUserId={selectedUserId}
+                    onSelect={setSelectedUserId}
+                  />
+                </div>
+              )}
 
               <div className="block" data-cy="MainContent">
                 {!selectedUserId && (
@@ -114,7 +117,7 @@ export const App = () => {
 
                 {isLoadingPosts && <Loader />}
 
-                {!isLoadingPosts && !errorMessage && posts.length > 0 && (
+                {!isLoadingPosts && !isPostsError && posts.length > 0 && (
                   <PostsList
                     posts={posts}
                     selectedUserId={selectedUserId}
@@ -123,7 +126,7 @@ export const App = () => {
                   />
                 )}
 
-                {errorMessage && (
+                {(isPostsError || isUsersError) && (
                   <div
                     className="notification is-danger"
                     data-cy="PostsLoadingError"
@@ -132,7 +135,7 @@ export const App = () => {
                   </div>
                 )}
                 {!isLoadingPosts &&
-                  !errorMessage &&
+                  !isPostsError &&
                   selectedUserId &&
                   posts.length === 0 && (
                 // eslint-disable-next-line prettier/prettier

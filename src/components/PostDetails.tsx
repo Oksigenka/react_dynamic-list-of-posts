@@ -35,9 +35,10 @@ export const PostDetails: React.FC<Props> = ({
     return null;
   }
 
-  const addComment = (data: CommentData) => {
+  const addComment = (data: CommentData): Promise<void> => {
     setMessageError(false);
-    postComment(data)
+
+    return postComment(data)
       .then(serverComment => {
         setComment(prev => [...prev, serverComment]);
       })
